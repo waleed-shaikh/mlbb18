@@ -1,0 +1,224 @@
+[{
+  "_id": {
+    "$oid": "6753142ba94e5daa739b75cc"
+  },
+  "category": "Weekly Pass",
+  "image": "packCategory/1733497899267--wp.webp",
+  "createdAt": {
+    "$date": "2024-12-06T15:11:39.278Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T15:11:39.278Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6753eaa2a94e5daa739b7c3b"
+  },
+  "category": "TOP UP DIAMONDS",
+  "image": "packCategory/1733552802313--utruck.png",
+  "createdAt": {
+    "$date": "2024-12-07T06:26:42.319Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-07T06:26:42.319Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6754f60284a77dd36b553302"
+  },
+  "category": "UC TOP UP",
+  "image": "packCategory/1733621250836--1733557022559--uc.png",
+  "createdAt": {
+    "$date": "2024-12-08T01:27:30.840Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-08T01:27:30.840Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67552aae84a77dd36b55393e"
+  },
+  "category": "TOKENS",
+  "image": "packCategory/1733634734899--coupons.78cd461b.png",
+  "createdAt": {
+    "$date": "2024-12-08T05:12:14.903Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-08T05:12:14.903Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67552c4684a77dd36b5539c0"
+  },
+  "category": "WEEKLY CARD PLUS",
+  "image": "packCategory/1733635142348--honor_of_kings_weekly_card_plus.webp",
+  "createdAt": {
+    "$date": "2024-12-08T05:19:02.351Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-08T05:19:02.351Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67552ca884a77dd36b5539dc"
+  },
+  "category": "WEEKLY CARD",
+  "image": "packCategory/1733635240980--506316109g.jpg",
+  "createdAt": {
+    "$date": "2024-12-08T05:20:40.983Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-08T05:20:40.983Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "675d927c8b85a1a0dc667033"
+  },
+  "category": "ML PH",
+  "image": "packCategory/1734185596632--mid-bulk.png",
+  "createdAt": {
+    "$date": "2024-12-14T14:13:16.639Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-14T14:13:16.639Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "675d92928b85a1a0dc667037"
+  },
+  "category": "ML MY",
+  "image": "packCategory/1734185618623--utruck.png",
+  "createdAt": {
+    "$date": "2024-12-14T14:13:38.627Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-14T14:13:38.627Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "675d95988b85a1a0dc667096"
+  },
+  "category": "MLBB MY&PH",
+  "image": "packCategory/1734186392619--utruck.png",
+  "createdAt": {
+    "$date": "2024-12-14T14:26:32.624Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-14T14:26:32.624Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67618b7c8b85a1a0dc6708b2"
+  },
+  "category": "MLBB PH&INDIA",
+  "image": "packCategory/1734445948807--IMG_5837.png",
+  "createdAt": {
+    "$date": "2024-12-17T14:32:28.813Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-17T14:32:28.813Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67618bb48b85a1a0dc6708ba"
+  },
+  "category": "MLBB GLOBAL ",
+  "image": "packCategory/1734446004056--IMG_5837.png",
+  "createdAt": {
+    "$date": "2024-12-17T14:33:24.061Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-17T14:33:24.061Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "677692180a1bff96a42da6b1"
+  },
+  "category": "DOUBLE DIAS PACKS",
+  "image": "packCategory/1735823896940--Screenshot-2024-12-27-063558.png",
+  "createdAt": {
+    "$date": "2025-01-02T13:18:16.959Z"
+  },
+  "updatedAt": {
+    "$date": "2025-01-02T13:18:16.959Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "677e0ed64425d6debc4c404d"
+  },
+  "category": "DOUBLE DIAS EVENT PACKS  ALL REGION EXCEPT INDO",
+  "image": "packCategory/1736314582027--Screenshot-2024-12-27-063558.png",
+  "createdAt": {
+    "$date": "2025-01-08T05:36:22.044Z"
+  },
+  "updatedAt": {
+    "$date": "2025-01-08T05:36:22.044Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6796570aaef604a8a966bdec"
+  },
+  "category": "MLBB MALAYSIA AND SINGAPORE",
+  "image": "packCategory/1737905930491--1734186392619--utruck.png",
+  "createdAt": {
+    "$date": "2025-01-26T15:38:50.498Z"
+  },
+  "updatedAt": {
+    "$date": "2025-01-26T15:38:50.498Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "679657bdaef604a8a966be23"
+  },
+  "category": "MLBB GLOBAL EXCEPT MALAYSIA SINGAPORE AND INDO",
+  "image": "packCategory/1737906109928--1734186392619--utruck.png",
+  "createdAt": {
+    "$date": "2025-01-26T15:41:49.934Z"
+  },
+  "updatedAt": {
+    "$date": "2025-01-26T15:41:49.934Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67a239f16617f610c45250f2"
+  },
+  "category": "MLBB PHILIPPINES",
+  "image": "packCategory/1738684913048--1734186392619--utruck.png",
+  "createdAt": {
+    "$date": "2025-02-04T16:01:53.053Z"
+  },
+  "updatedAt": {
+    "$date": "2025-02-04T16:01:53.053Z"
+  },
+  "__v": 0
+}]

@@ -1,0 +1,55 @@
+{
+  "_id": {
+    "$oid": "660d8474ea5b27a0fb1fc226"
+  },
+  "name": "MLLB Normal Packs",
+  "cost": [
+    {
+      "id": "13",
+      "amount": "78 + 8 Bonus💎",
+      "price": "109"
+    },
+    {
+      "id": "23",
+      "amount": "156+16 Bonus💎",
+      "price": "219"
+    },
+    {
+      "id": "25",
+      "amount": "234+23 Bonus💎",
+      "price": "329"
+    },
+    {
+      "id": "13&25",
+      "amount": "312+31 Bonus💎",
+      "price": "439"
+    },
+    {
+      "id": "26",
+      "amount": "625+81 Bonus💎",
+      "price": "879"
+    },
+    {
+      "id": "16642",
+      "amount": "WEEKLY PASS",
+      "price": "145"
+    },
+    {
+      "id": "16642&23",
+      "amount": "172+WKP",
+      "price": "364"
+    }
+  ],
+  "desc": "🔥Instant Delivery🔥\r\nIndonesian accounts will not be credited❌",
+  "category": "Game",
+  "api": "yes",
+  "region": "brazil",
+  "stock": "Yes",
+  "isDeleted": false,
+  "__v": 9,
+  "images": [
+    "productImages/1718875572699--Picsart_23-09-25_11-12-32-481.png",
+    "productImages/1718875604622--Picsart_23-09-25_11-12-32-481.png",
+    "productImages/1718875637625--Picsart_23-09-25_11-12-32-481.png"
+  ]
+}
