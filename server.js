@@ -40,6 +40,7 @@ app.use(
   "/productImages",
   express.static(path.join(__dirname, "productImages"))
 );
+
 app.use("/", express.static("productImages"));
 app.use("/admin-products", express.static("productImages"));
 app.use("/admin-edit-product/:id", express.static("productImages"));
