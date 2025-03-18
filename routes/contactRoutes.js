@@ -2,12 +2,13 @@ const express = require("express");
 const contactModel = require("../models/contactModel");
 const browserMiddleware = require("../middlewares/browserMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
+const generalRateLimiter = require("../middlewares/generalRateLimiter");
 
 // router object
 const router = express.Router();
 
 // routes
-router.post("/add-contact-form", browserMiddleware, async (req, res) => {
+router.post("/add-contact-form", generalRateLimiter, browserMiddleware, async (req, res) => {
   try {
     const newContact = new contactModel(req.body);
     await newContact.save();
@@ -22,7 +23,7 @@ router.post("/add-contact-form", browserMiddleware, async (req, res) => {
   }
 });
 
-router.post("/get-user-query", authMiddleware, async (req, res) => {
+router.post("/get-user-query", generalRateLimiter, authMiddleware, async (req, res) => {
   try {
     const queries = await contactModel.find({ email: req.body.email });
     if (queries.length === 0) {
@@ -44,7 +45,7 @@ router.post("/get-user-query", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/update-query", authMiddleware, async (req, res) => {
+router.post("/update-query", generalRateLimiter, authMiddleware, async (req, res) => {
   try {
     const query = await contactModel.findOne({ _id: req.body.id });
     if (!query) {

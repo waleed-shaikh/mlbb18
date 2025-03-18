@@ -15,6 +15,7 @@ const {
   getAllPaymentsController,
   getWebsiteContoller,
   updateWebsiteController,
+  smileBalanceController
 } = require("../controllers/AdminCtrl");
 const browserMiddleware = require("../middlewares/browserMiddleware");
 
@@ -37,6 +38,7 @@ router.get("/get-all-payments", adminAuthMiddleware, getAllPaymentsController);
 
 // ============== USERS
 router.get("/get-all-users", adminAuthMiddleware, getAllUserController);
+router.get("/smile-balance", adminAuthMiddleware, smileBalanceController);
 router.post("/get-user", adminAuthMiddleware, getUserController);
 router.post("/delete-user", adminAuthMiddleware, deleteUserController);
 router.post("/admin-edit-user", adminAuthMiddleware, editUserController);

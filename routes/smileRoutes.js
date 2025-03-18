@@ -11,9 +11,10 @@ const router = express.Router();
 const nodemailer = require("nodemailer");
 const browserMiddleware = require("../middlewares/browserMiddleware");
 const fs = require("fs");
+const generalRateLimiter = require("../middlewares/generalRateLimiter");
 
 // barcode
-router.post("/create", authMiddleware, async (req, res) => {
+router.post("/create", generalRateLimiter, browserMiddleware, authMiddleware, async (req, res) => {
   try {
     const {
       order_id,
@@ -74,7 +75,7 @@ router.post("/create", authMiddleware, async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-router.post("/status", browserMiddleware, async (req, res) => {
+router.post("/status", generalRateLimiter, browserMiddleware, async (req, res) => {
   try {
     const { orderId } = req.query;
 
@@ -237,7 +238,7 @@ router.post("/status", browserMiddleware, async (req, res) => {
 });
 
 //  wallet route
- router.post("/wallet", browserMiddleware, authMiddleware, async (req, res) => {
+ router.post("/wallet", generalRateLimiter, browserMiddleware, authMiddleware, async (req, res) => {
    try {
      const {
        orderId,
@@ -283,17 +284,21 @@ router.post("/status", browserMiddleware, async (req, res) => {
      if (!pp) {
        return res.status(404).json({ message: "Product not found" });
      }
-     const priceExists = pp.cost.some(
-       (item) =>
-         item.amount === amount &&
-         (parseFloat(item.price) === parseFloat(price) ||
-           parseFloat(item.resPrice) === parseFloat(price))
-     );
-     if (!priceExists) {
-       return res.status(400).json({
-         message: "Amount does not match",
-       });
-     }
+
+    //CROSS CHECK PACKAGE PRICE AND GAME ID
+    const priceExists = pp.cost.some((item) => {
+      const condition1 = item.amount === amount;
+      const condition2 = Number(item.price) === Number(price) || Number(item.resPrice) === Number(price);
+      const condition3 = item.id === productid;
+  
+      const finalCheck = condition1 && (condition2) && condition3;
+  
+      return finalCheck;
+    });
+
+    if (!priceExists) {
+      return res.status(201).json({ message: "Amount does not match." });
+    }
 
      const user = await userModel.findOne({ email: customer_email });
      if (!user) {
@@ -429,6 +434,9 @@ router.post("/status", browserMiddleware, async (req, res) => {
          .send({ success: true, message: "Order Placed Successfully" });
      } else {
        console.log("Failed:", orderResponse.data.message);
+       return res
+         .status(201)
+         .send({ success: false, message: orderResponse.data.message });
      }
    } catch (smileOneError) {
      console.error("Error during Smile One order creation:", smileOneError);

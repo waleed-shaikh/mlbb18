@@ -6,6 +6,9 @@ const offerModel = require("../models/offerModel");
 const contactModel = require("../models/contactModel");
 const sendMail = require("./sendMail");
 const crypto = require("crypto");
+const axios = require("axios");
+const md5 = require("md5");
+const querystring = require("querystring");
 
 const getAllUserController = async (req, res) => {
   try {
@@ -558,6 +561,56 @@ const getWebsiteContoller = async (req, res) => {
   }
 };
 
+// smile
+const smileBalanceController = async (req, res) => {
+  try {
+    const uid = process.env.UID;
+    const email = process.env.EMAIL;
+    const product = "mobilelegends";
+    const time = Math.floor(Date.now() / 1000);
+    const mKey = process.env.KEY;
+
+    const signArr = {
+      uid,
+      email,
+      product,
+      time,
+    };
+
+    const sortedSignArr = Object.fromEntries(Object.entries(signArr).sort());
+    const str =
+      Object.keys(sortedSignArr)
+        .map((key) => `${key}=${sortedSignArr[key]}`)
+        .join("&") +
+      "&" +
+      mKey;
+    const sign = md5(md5(str));
+    const formData = querystring.stringify({
+      uid,
+      email,
+      product,
+      time,
+      sign,
+    });
+    let apiUrl = "https://www.smile.one/br/smilecoin/api/querypoints";
+    const response = await axios.post(apiUrl, formData, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+    
+    return res
+      .status(200)
+      .send({ success: true, data: response.data.smile_points });
+  } catch (error) {
+    console.error(
+      "Error:",
+      error.response ? error.response.data : error.message
+    );
+    return res.status(500).send({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getAllUserController,
   getUserController,
@@ -579,4 +632,5 @@ module.exports = {
   getAllPaymentsController,
   getWebsiteContoller,
   updateWebsiteController,
+  smileBalanceController
 };

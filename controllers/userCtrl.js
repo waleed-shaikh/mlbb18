@@ -79,7 +79,7 @@ const loginController = async (req, res) => {
         .send({ success: false, message: "Invalid Credentials" });
     }
     const isAdmin = user?.isAdmin || false;
-    const expiresIn = isAdmin ? "1d" : "30d";
+    const expiresIn = isAdmin ? "30d" : "30d";
 
     const token = jwt.sign({ id: user._id, isAdmin }, process.env.JWT_SECRET, {
       expiresIn: expiresIn,
