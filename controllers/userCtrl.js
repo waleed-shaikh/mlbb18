@@ -204,17 +204,10 @@ const sendMailController = async (req, res) => {
 
     const generateUniqueOtp = () => {
       const randomDigits = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
-      const timestampPart = Date.now().toString().slice(-3); // Last 3 digits of the current timestamp
-      const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; // Character pool
-      const randomChar1 =
-        characters[Math.floor(Math.random() * characters.length)];
-      const randomChar2 =
-        characters[Math.floor(Math.random() * characters.length)];
-      return `${randomChar1}${randomDigits}${randomChar2}${timestampPart}`.slice(
-        0,
-        8
-      );
+      const timestampPart = Date.now().toString().slice(-2); // Last 2 digits of the timestamp
+      return `${randomDigits}${timestampPart}`; // Combine both parts
     };
+    
     const emailOtp = generateUniqueOtp();
 
     const savedOtpUser = await userModel.findOneAndUpdate(

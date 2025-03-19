@@ -14,10 +14,12 @@ dotenv.config();
 connectDB();
 const app = express();
 
-// Set up session middleware
+//Trust Proxy Enable 
+app.set("trust proxy", 1);
+//Set up session middleware
 app.use(
   session({
-    secret: "KISSLAND@#$!@#",
+    secret: "NEOSTORE@#$123OFFICIAL",
     resave: false,
     saveUninitialized: true,
     cookie: {

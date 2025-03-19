@@ -224,7 +224,34 @@ const deleteModelController = async (req, res) => {
 
 const adminGetAllOrdersController = async (req, res) => {
   try {
-    const orders = await orderModel.find({});
+
+    const { email, orderId, startDate, endDate, userid } = req.body;
+    let query = {};
+
+    if (email) {
+      query.customer_email = { $regex: email, $options: "i" }; // Case-insensitive email search
+    }
+
+     if (userid) {
+       query.userId = { $regex: userid, $options: "i" }; // Case-insensitive email search
+     }
+
+    if (orderId) {
+      query.orderId = { $regex: orderId, $options: "i" }; // Case-insensitive order ID search
+    }
+
+
+    // Use provided date range if available
+    if (startDate && endDate) {
+      query.createdAt = {
+        $gte: new Date(new Date(startDate).setHours(0, 0, 0)),
+        $lte: new Date(new Date(endDate).setHours(23, 59, 59)),
+      };
+    }
+
+    
+    const orders = await orderModel.find(query);
+
     if (!orders || orders.length === 0) {
       return res
         .status(200)
@@ -233,9 +260,14 @@ const adminGetAllOrdersController = async (req, res) => {
 
     const totalAmount = await orderModel.aggregate([
       {
+        $project: {
+          price: { $trim: { input: { $toString: "$price" } } } // Trim whitespace
+        }
+      },
+      {
         $group: {
           _id: null,
-          total: { $sum: { $toDouble: "$amount" } }, // Convert "price" to double
+          total: { $sum: { $toDouble: "$price" } },
         },
       },
       {
@@ -248,7 +280,7 @@ const adminGetAllOrdersController = async (req, res) => {
     return res.status(201).send({
       success: true,
       message: "All Orders Fetched Success",
-      data: orders,
+      data: orders.reverse(),
       total: totalAmount.length > 0 ? totalAmount[0].total : 0,
     });
   } catch (error) {
@@ -262,8 +294,9 @@ const adminGetAllOrdersController = async (req, res) => {
 
 const adminUpdateOrderController = async (req, res) => {
   try {
+    console.log(req.body.orderId)
     const order = await orderModel.findOne({
-      _id: req.body.id,
+      orderId: req.body.orderId,
     });
     if (!order) {
       return res
@@ -272,7 +305,7 @@ const adminUpdateOrderController = async (req, res) => {
     }
     const updateOrder = await orderModel.findOneAndUpdate(
       {
-        _id: req.body.id,
+        orderId: req.body.orderId,
       },
       { $set: { status: req.body.status } },
       { new: true }

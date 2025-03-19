@@ -11,6 +11,7 @@ const router = express.Router();
 const nodemailer = require("nodemailer");
 const browserMiddleware = require("../middlewares/browserMiddleware");
 const fs = require("fs");
+const qs = require("qs");
 const generalRateLimiter = require("../middlewares/generalRateLimiter");
 
 // barcode
@@ -18,55 +19,61 @@ router.post("/create", generalRateLimiter, browserMiddleware, authMiddleware, as
   try {
     const {
       order_id,
-      txn_amount,
-      txn_note,
-      product_name,
-      customer_name,
-      customer_email,
-      customer_mobile,
-      callback_url,
+      txn_note
     } = req.body;
 
-    const pname = txn_note.split("@")[3];
-    const amount = txn_note.split("@")[4];
-    const product = await productModel.findOne({ name: pname });
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+    // ✅ Validate required fields
+    if (!order_id || !txn_note) {
+      return res.status(404).json({ success: false, message: "Missing required fields" });
     }
-    const priceExists = product.cost.some(
+    const [userId, zoneId, productId, pname, amount, selectedPrice, customer_name, customer_email, customer_mobile, region] = (txn_note || "").split("*");
+
+    // Validate Product
+    const checkProduct = await productModel.findOne({ name: pname });
+    if (!checkProduct) {
+      return res.status(201).json({ message: "Product not found" });
+    }
+
+    //CROSS CHECK PACKAGE PRICE AND GAME ID
+    const priceExists = checkProduct.cost.some(
       (item) =>
         item.amount === amount &&
-        (parseFloat(item.price) === parseFloat(txn_amount) ||
-          parseFloat(item.resPrice) === parseFloat(txn_amount))
+        (Number(item.price) === Number(selectedPrice) || (Number(item.resPrice) === Number(selectedPrice) && item.id === productId))
     );
+
     if (!priceExists) {
-      return res.status(400).json({
-        message: "Amount does not match",
-      });
+      return res.status(201).json({ message: "Amount does not match." });
     }
 
     const existingOrder = await orderModel.findOne({ orderId: order_id });
     if (existingOrder) {
-      return res.redirect("https://ahongachao.in/user-dashboard");
+      return res.redirect("https://neostoreofficial.com/user-dashboard");
     }
+    
 
-    const response = await axios.post("https://pgateway.in/order/create", {
-      token: process.env.API_TOKEN,
-      order_id,
-      txn_amount,
-      txn_note,
-      product_name,
-      customer_name,
-      customer_email,
-      customer_mobile,
-      callback_url,
+    const callbackUrl = `https://neostoreofficial.com/api/smile/check-status?orderId=${order_id}`;
+
+    const payload = qs.stringify({
+      customer_mobile: customer_mobile,
+      user_token: process.env.EX_GATEWAY_API_TOKEN,
+      amount: "1",
+      order_id: order_id,
+      redirect_url: callbackUrl,
+      remark1: `${pname}@${amount}@${selectedPrice}rs`,
+      remark2: txn_note,
+    });
+
+    const response = await axios.post("https://exgateway.com/api/create-order", payload, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
     });
 
     if (response.data && response.data.status === false) {
       console.log(response.data);
       return res
         .status(201)
-        .send({ success: false, message: res.data.message });
+        .send({ success: false, message: response.data.message });
     }
     // res.cookie("orderInProgress", true);
     return res.status(200).send({ success: true, data: response.data });
@@ -75,53 +82,94 @@ router.post("/create", generalRateLimiter, browserMiddleware, authMiddleware, as
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-router.post("/status", generalRateLimiter, browserMiddleware, async (req, res) => {
+router.get("/check-status", generalRateLimiter, browserMiddleware, async (req, res) => {
   try {
     const { orderId } = req.query;
 
-    const existingOrder = await orderModel.findOne({ orderId: orderId });
-    if (existingOrder) {
-      return res.redirect("https://ahongachao.in/user-dashboard");
-    }
+    console.log(orderId)
 
-    const orderStatusResponse = await axios.post(
-      "https://pgateway.in/order/status",
-      {
-        token: process.env.API_TOKEN,
-        order_id: orderId,
-      }
-    );
+    const existingOrder = await orderModel.findOne({
+      orderId: orderId,
+    }); 
+    if (existingOrder) {
+      return res.status(201).json({ success: false, message: `Your order is already exist and found with ${existingOrder?.status} status`});
+    }
+    const payload = qs.stringify({
+      user_token: process.env.EX_GATEWAY_API_TOKEN,
+      order_id: orderId
+    });
+
+    const orderStatusResponse = await axios.post("https://exgateway.com/api/check-order-status", payload, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+    console.log(orderStatusResponse.data)
+    
     // Check if the order ID is found
     if (orderStatusResponse.data.status) {
-      const transactionDetails = orderStatusResponse.data.results;
-      if (transactionDetails.status === "Success") {
+      const transactionDetails = orderStatusResponse.data.result;
+      if (transactionDetails.txnStatus === 'SUCCESS') {
         const {
-          order_id,
-          txn_note,
-          customer_email,
-          customer_mobile,
-          txn_amount,
-          product_name,
-          utr_number,
-          customer_name,
+          orderId: order_id,
+          utr: utr_number,
+          amount: price,
+          remark2
         } = transactionDetails;
 
-        const [userid, zoneid, productids, pname, amount] = txn_note.split("@");
-        const productid = productids.split("&");
-        const region = product_name;
+        if (
+          !order_id ||
+          !price ||
+          !remark2 ||
+          !utr_number
+        ) {
+          console.log("parameter missing")
+          return res.redirect("https://neostoreofficial.com/user-dashboard");
+        }
 
-        //saving payment
+        const [userid, zoneid, productids, pname, amount, selectedPrice, customer_name, customer_email, customer_mobile, region] = remark2.split("*");
+        console.log(userid)
+        console.log(zoneid)
+        console.log(productids)
+        console.log(pname)
+        console.log(amount)
+        console.log(selectedPrice)
+        console.log(customer_name)
+        console.log(customer_email)
+        console.log(customer_mobile)
+        console.log(region)
+        const productid = productids.split("&");
+
+        /// saving payment
         const paymentObject = {
           name: customer_name,
           email: customer_email,
           mobile: customer_mobile,
-          amount: txn_amount,
+          amount: price,
           orderId: order_id,
-          status: transactionDetails.status,
-          utrNumber: utr_number,
+          status: transactionDetails.txnStatus,
+          upi_txn_id: utr_number,
+          type: "order",
         };
         const newPayment = new paymentModel(paymentObject);
         await newPayment.save();
+
+        // Validate Product
+        const checkProduct = await productModel.findOne({ name: pname });
+        if (!checkProduct) {
+          return res.status(201).json({ message: "Product not found" });
+        }
+
+        //CROSS CHECK PACKAGE PRICE AND GAME ID
+        const priceExists = checkProduct.cost.some(
+          (item) =>
+            item.amount === amount &&
+            (Number(item.price) === Number(selectedPrice) || (Number(item.resPrice) === Number(selectedPrice) && item.id === productids))
+        );
+
+        if (!priceExists) {
+          return res.status(201).json({ message: "Amount does not match." });
+        }
 
         const uid = process.env.UID;
         const email = process.env.EMAIL;
@@ -172,15 +220,16 @@ router.post("/status", generalRateLimiter, browserMiddleware, async (req, res) =
         if (orderResponse?.data?.status === 200) {
           const order = new orderModel({
             api: "yes",
-            orderDetails: amount,
+            amount: amount,
             orderId: order_id,
             productinfo: pname,
-            amount: txn_amount,
+            price: price,
             email: customer_email,
             mobile: customer_mobile,
             userId: userid,
             zoneId: zoneid,
             status: "success",
+            paymentMode: "UPI",
           });
           await order.save();
 
@@ -189,7 +238,7 @@ router.post("/status", generalRateLimiter, browserMiddleware, async (req, res) =
             const dynamicData = {
               orderId: `${order_id}`,
               amount: `${amount}`,
-              price: `${txn_amount}`,
+              price: `${price}`,
               p_info: `${pname}`,
               userId: `${userid}`,
               zoneId: `${zoneid}`,
@@ -221,8 +270,22 @@ router.post("/status", generalRateLimiter, browserMiddleware, async (req, res) =
           } catch (error) {
             console.error("Error sending email:", error);
           }
-          return res.redirect("https://ahongachao.in/user-dashboard");
+          return res.redirect("https://neostoreofficial.com/user-dashboard");
         } else {
+          const order = new orderModel({
+            api: "yes",
+            amount: amount,
+            orderId: order_id,
+            productinfo: pname,
+            price: price,
+            customer_email,
+            customer_mobile,
+            userId: userid,
+            zoneId: zoneid,
+            status: "failed",
+            paymentMode: "UPI",
+          });
+          await order.save();
           console.error("Error placing order:", orderResponse?.data?.message);
           return res.status(500).json({ error: "Error placing order" });
         }
@@ -383,13 +446,14 @@ router.post("/status", generalRateLimiter, browserMiddleware, async (req, res) =
          api: "yes",
          orderId: orderId,
          productinfo: pname,
-         amount: price,
-         orderDetails: amount,
+         price: price,
+         amount: amount,
          email: customer_email,
          mobile: customer_mobile,
          userId: userid,
          zoneId: zoneid,
          status: "success",
+         paymentMode: "WALLET",
        });
        await order.save();
        try {

@@ -43,7 +43,7 @@ router.post("/get-user", adminAuthMiddleware, getUserController);
 router.post("/delete-user", adminAuthMiddleware, deleteUserController);
 router.post("/admin-edit-user", adminAuthMiddleware, editUserController);
 // ============== ORDERS
-router.get(
+router.post(
   "/admin-get-all-orders",
   adminAuthMiddleware,
   adminGetAllOrdersController

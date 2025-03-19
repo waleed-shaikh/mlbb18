@@ -15,6 +15,9 @@ const orderSchema = new mongoose.Schema(
     amount: {
       type: String,
     },
+    price: {
+      type: String,
+    },
     email: {
       type: String,
     },
@@ -37,9 +40,12 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "pending",
     },
+    paymentMode: {
+      type: String,
+    },
     orderDate: {
       type: Date,
-      default: Date.now(),
+      default: Date.now,
     },
   },
   {

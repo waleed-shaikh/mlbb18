@@ -25,13 +25,13 @@ const paymentSchema = new mongoose.Schema(
     status: {
       type: String,
     },
-    utrNumber: {
+    upi_txn_id: {
       type: String,
       required: true,
     },
     payDate: {
       type: Date,
-      default: Date.now(),
+      default: Date.now,
     },
   },
   {
