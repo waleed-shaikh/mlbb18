@@ -292,6 +292,46 @@ const adminGetAllOrdersController = async (req, res) => {
   }
 };
 
+
+
+const adminGetAllOrdersDashboardDetails = async (req, res) => {
+  try {
+    const orders = await orderModel.find({});
+    if (!orders || orders.length === 0) {
+      return res
+        .status(200)
+        .send({ success: false, message: "No Orders Found" });
+    }
+
+    const totalAmount = await orderModel.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $toDouble: "$price" } },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          total: 1,
+        },
+      },
+    ]);
+    return res.status(201).send({
+      success: true,
+      message: "All Orders Fetched Success",
+      data: orders,
+      total: totalAmount.length > 0 ? totalAmount[0].total : 0,
+    });
+  } catch (error) {
+    console.error("Error in adminGetAllOrdersController:", error);
+    res.status(500).send({
+      success: false,
+      message: `Admin Get All Order Ctrl ${error.message}`,
+    });
+  }
+};
+
 const adminUpdateOrderController = async (req, res) => {
   try {
     console.log(req.body.orderId)
@@ -665,5 +705,6 @@ module.exports = {
   getAllPaymentsController,
   getWebsiteContoller,
   updateWebsiteController,
-  smileBalanceController
+  smileBalanceController,
+  adminGetAllOrdersDashboardDetails
 };

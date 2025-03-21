@@ -56,7 +56,7 @@ router.post("/create", generalRateLimiter, browserMiddleware, authMiddleware, as
     const payload = qs.stringify({
       customer_mobile: customer_mobile,
       user_token: process.env.EX_GATEWAY_API_TOKEN,
-      amount: "1",
+      amount: selectedPrice,
       order_id: order_id,
       redirect_url: callbackUrl,
       remark1: `${pname}@${amount}@${selectedPrice}rs`,

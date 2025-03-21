@@ -15,7 +15,8 @@ const {
   getAllPaymentsController,
   getWebsiteContoller,
   updateWebsiteController,
-  smileBalanceController
+  smileBalanceController,
+  adminGetAllOrdersDashboardDetails
 } = require("../controllers/AdminCtrl");
 const browserMiddleware = require("../middlewares/browserMiddleware");
 
@@ -47,6 +48,11 @@ router.post(
   "/admin-get-all-orders",
   adminAuthMiddleware,
   adminGetAllOrdersController
+);
+router.get(
+  "/admin-get-dashboard-order-details",
+  adminAuthMiddleware,
+  adminGetAllOrdersDashboardDetails
 );
 router.post("/update-order", adminAuthMiddleware, adminUpdateOrderController);
 // ============== QUERIES
