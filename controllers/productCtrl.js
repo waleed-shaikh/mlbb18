@@ -45,7 +45,7 @@ const addProductController = async (req, res) => {
 
 const updateProductController = async (req, res) => {
   try {
-    const { id, name, desc, descTwo, api, apiName, region, cost } = req.body;
+    const { id, name, desc, descTwo, api, apiName, region, cost, stock } = req.body;
 
     const product = await productModel.findOne({ _id: id });
     if (!product) {
@@ -65,6 +65,7 @@ const updateProductController = async (req, res) => {
         region,
         apiName,
         cost,
+        stock,
         image: req.file ? req.file.path : product.image,
       },
       { new: true }

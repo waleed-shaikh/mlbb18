@@ -12,11 +12,14 @@ const router = express.Router();
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const fs = require("fs");
+const qs = require("qs");
 const nodemailer = require("nodemailer");
 const browserMiddleware = require("../middlewares/browserMiddleware");
 const adminAuthMiddleware = require("../middlewares/adminAuthMiddleware");
+const walletHistoryModel = require("../models/walletHistoryModel");
+const generalRateLimiter = require("../middlewares/generalRateLimiter");
 
-router.post("/get-role", browserMiddleware, async (req, res) => {
+router.post("/get-role",  browserMiddleware, async (req, res) => {
   try {
     const { userid, zoneid, productid, region } = req.body;
     const uid = process.env.UID;
@@ -78,7 +81,7 @@ router.post("/get-role", browserMiddleware, async (req, res) => {
     return res.status(500).send({ success: false, message: error.message });
   }
 });
-router.post("/get-user-payments", browserMiddleware, async (req, res) => {
+router.post("/get-user-payments", authMiddleware, browserMiddleware, async (req, res) => {
   try {
     const payments = await paymentModel.find({ email: req.body.email });
     if (payments.length === 0) {
@@ -119,112 +122,151 @@ router.get("/get-all-payments", adminAuthMiddleware, async (req, res) => {
   }
 });
 
-router.post("/addmoney", authMiddleware, async (req, res) => {
+//ADD WALLET MONEY BY EX_GATEWAY
+router.post("/create-payment", generalRateLimiter, authMiddleware, async (req, res) => {
   try {
     const {
       order_id,
       txn_amount,
-      txn_note,
       product_name,
       customer_name,
       customer_email,
-      customer_mobile,
-      callback_url,
+      customer_mobile
     } = req.body;
 
-    if (parseInt(txn_amount) > 2000) {
-      return res.redirect("https://ahongachao.in/user-dashboard");
-    }
-
-    const existingPayment = await paymentModel.findOne({ orderId: order_id });
+    const existingPayment = await paymentModel.findOne({
+      orderId: order_id,
+    });
     if (existingPayment) {
-      return res.redirect("https://ahongachao.in/user-dashboard");
+      return res.redirect("https://neostoreofficial.com/wallet");
     }
 
-    const response = await axios.post("https://pgateway.in/order/create", {
-      token: process.env.API_TOKEN,
-      order_id,
-      txn_amount,
-      txn_note,
-      product_name,
-      customer_name,
-      customer_email,
-      customer_mobile,
-      callback_url,
+    const callbackUrl = `https://neostoreofficial.com/api/payment/check-status?orderId=${order_id}`;
+
+    const payload = qs.stringify({
+      customer_mobile: customer_mobile,
+      user_token: process.env.EX_GATEWAY_API_TOKEN,
+      amount: txn_amount,
+      order_id: order_id,
+      redirect_url: callbackUrl,
+      remark1: product_name,
+      remark2: `${customer_name}*${customer_email}*${customer_mobile}`,
+    });
+
+    const response = await axios.post("https://exgateway.com/api/create-order", payload, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
     });
 
     if (response.data && response.data.status === false) {
-      console.log(response.data);
       return res
         .status(201)
-        .send({ success: false, message: res.data.message });
+        .send({ success: false, message: response.data.message });
     }
     return res.status(200).send({ success: true, data: response.data });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ error: error });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
-router.post("/status", async (req, res) => {
+router.get("/check-status", generalRateLimiter, async (req, res) => {
   try {
-    const { orderId } = req.query;
-
-    const existingPayment = await paymentModel.findOne({ orderId: orderId });
+    const {orderId} = req.query;
+    console.log(orderId)
+    const existingPayment = await paymentModel.findOne({
+      orderId: orderId,
+    });
     if (existingPayment) {
-      return res.redirect("https://ahongachao.in/user-dashboard");
+      return res.redirect("https://neostoreofficial.com/wallet");
     }
+    const payload = qs.stringify({
+      user_token: process.env.EX_GATEWAY_API_TOKEN,
+      order_id: orderId
+    });
 
-    const orderStatusResponse = await axios.post(
-      "https://pgateway.in/order/status",
-      {
-        token: process.env.API_TOKEN,
-        order_id: orderId,
-      }
-    );
+    const orderStatusResponse = await axios.post("https://exgateway.com/api/check-order-status", payload, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
 
-    // Check if the order ID is found
+    console.log(orderStatusResponse.data)
+
     if (orderStatusResponse.data.status) {
-      const transactionDetails = orderStatusResponse.data.results;
-      if (transactionDetails.status === "Success") {
-        if (parseInt(transactionDetails.txn_amount) > 2000) {
-          return res.redirect("https://ahongachao.in/user-dashboard");
+      const transactionDetails = orderStatusResponse.data.result;
+      if (transactionDetails.txnStatus === 'SUCCESS') {
+        const {
+          orderId: order_id,
+          utr: utr_number,
+          amount: txn_amount,
+          remark1,
+          remark2
+        } = transactionDetails;
+
+        if (
+          !order_id ||
+          !utr_number ||
+          !remark2
+        ) {
+          console.log("parameter missing")
+          return res.redirect("https://neostoreofficial.com/wallet");
         }
 
+        const [customer_name, customer_email, customer_mobile] = remark2.split("*");
+
+        // saving payment
         const paymentObject = {
-          name: transactionDetails.customer_name,
-          email: transactionDetails.customer_email,
-          amount: transactionDetails.txn_amount,
-          mobile: transactionDetails.customer_mobile,
-          orderId: transactionDetails.order_id,
-          status: transactionDetails.status,
-          utrNumber: transactionDetails.utr_number,
+          name: customer_name,
+          email: customer_email,
+          mobile: customer_mobile,
+          amount: txn_amount,
+          orderId: order_id,
+          status: transactionDetails.txnStatus,
+          upi_txn_id: utr_number,
+          type: "Wallet Topup",
         };
-        // Save payment details to the database
-        const existingPayment = await paymentModel.findOne({
-          utrNumber: transactionDetails.utr_number,
+        const newPayment = new paymentModel(paymentObject);
+        await newPayment.save();
+
+        const user = await userModel.findOne({
+          email: customer_email,
         });
 
-        if (!existingPayment) {
-          const newPayment = new paymentModel(paymentObject);
-          await newPayment.save();
-          // Update user balance
-          const user = await userModel.findOne({
-            email: transactionDetails.customer_email,
-          });
-          if (user) {
-            const updatedUser = await userModel.findOneAndUpdate(
-              { email: transactionDetails.customer_email },
-              {
-                $set: {
-                  balance: user.balance + transactionDetails.txn_amount,
-                },
-              },
-              { new: true }
-            );
-            if (updatedUser) {
-              return res.redirect("https://ahongachao.in/user-dashboard");
-            }
-          }
+        if(!user){
+          return res.status(201).send({ success: false, message: "user not found" });
+        }
+
+        // Prepare balance update
+        const newBalance = parseFloat(user.balance) + parseFloat(txn_amount);
+
+        const updatedUser = await userModel.findOneAndUpdate(
+          { email: customer_email },
+          {
+            $set: {
+              balance: newBalance,
+            },
+          },
+          { new: true }
+        );
+
+        // Prepare wallet history data
+        const historyData = {
+          orderId: order_id,
+          email: customer_email,
+          balanceBefore: user?.balance,
+          balanceAfter: newBalance,
+          price: `+${txn_amount}`,
+          p_info: remark1,
+          type: "addmoney",
+        };
+
+        // Save history
+        const history = new walletHistoryModel(historyData);
+        await history.save();
+
+        if (updatedUser) {
+          return res.redirect(`https://neostoreofficial.com/wallet`);
         }
       }
     } else {

@@ -86,8 +86,6 @@ router.get("/check-status", generalRateLimiter, browserMiddleware, async (req, r
   try {
     const { orderId } = req.query;
 
-    console.log(orderId)
-
     const existingOrder = await orderModel.findOne({
       orderId: orderId,
     }); 
@@ -164,7 +162,7 @@ router.get("/check-status", generalRateLimiter, browserMiddleware, async (req, r
         const priceExists = checkProduct.cost.some(
           (item) =>
             item.amount === amount &&
-            (Number(item.price) === Number(selectedPrice) || (Number(item.resPrice) === Number(selectedPrice) && item.id === productids))
+            (Number(item.price) === Number(price) || (Number(item.resPrice) === Number(price) && item.id === productids))
         );
 
         if (!priceExists) {
@@ -216,6 +214,8 @@ router.get("/check-status", generalRateLimiter, browserMiddleware, async (req, r
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
           });
         }
+
+        console.log(orderResponse.data)
 
         if (orderResponse?.data?.status === 200) {
           const order = new orderModel({
